@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS := -MMD -Wall -Wextra -pedantic -std=c11 -I inc
+CFLAGS := -MMD -Wall -Wextra -pedantic -std=c17 -I inc
  
 SRC=$(wildcard src/*.c)
 OBJ=$(SRC:%.c=%.o)
