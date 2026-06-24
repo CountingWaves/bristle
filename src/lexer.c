@@ -132,6 +132,8 @@ Token NextToken(Lexer* lexer) {
 			return MakeToken(lexer, TOKEN_STAR);
 		case '/':
 			return MakeToken(lexer, TOKEN_SLASH);
+		case '=':
+			return MakeToken(lexer, TOKEN_EQUAL);
 		default:
 			return ErrorToken(lexer, "Unrecognized character!");
 	}
