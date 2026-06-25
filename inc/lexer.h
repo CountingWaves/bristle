@@ -1,7 +1,7 @@
 #ifndef bristle_lexer_h
 #define bristle_lexer_h
 
-#include <stddef.h>
+#include "text.h"
 
 typedef enum {
 	// one or two character tokens
@@ -28,9 +28,7 @@ typedef enum {
 } TokenKind;
 
 typedef struct {
-	// characters of token with source
-	size_t length;
-	const char* chars;
+	Slice lexeme;
 
 	// other token data
 	TokenKind kind;
@@ -38,14 +36,16 @@ typedef struct {
 } Token;
 
 typedef struct {
-	const char* source;
-	const char* start;
-	const char* current;
+	Slice source;
+
+	// fields to track position in source
+	const unsigned char* start;
+	const unsigned char* current;
 	unsigned int line;
 } Lexer;
 
 
-Lexer NewLexer(const char* source);
+Lexer NewLexer(Slice source);
 Token NextToken(Lexer* lexer);
 
 #endif

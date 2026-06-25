@@ -1,7 +1,18 @@
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "lexer.h"
+
+Lexer NewLexer(Slice source) {
+	Lexer lex = {
+		.source = source,
+		.start = source.chars,
+		.current = source.chars,
+		.line = 1,
+	};
+	return lex;
+}
 
 static bool is_digit(char c) {
 	return '0' <= c && c <= '9';
@@ -14,9 +25,11 @@ static bool is_alpha(char c) {
 }
 
 static char advance(Lexer* lexer) {
-	char c = *lexer->current;
-	if (c != '\0') lexer->current++;
-	return c;
+	if (lexer->current > lexer->source.chars + lexer->source.length) {
+		return '\0';
+	} else {
+		return *lexer->current++;
+	}
 }
 
 static void SkipWhitespace(Lexer* lexer) {
@@ -40,18 +53,22 @@ static void SkipWhitespace(Lexer* lexer) {
 
 static Token MakeToken(Lexer* lexer, TokenKind kind) {
 	Token t = {
-		.length = (size_t) (lexer->current - lexer->start),
-		.chars = lexer->start,
+		.lexeme = (Slice) {
+			.length = (size_t) (lexer->current - lexer->start),
+			.chars = lexer->start
+		},
 		.kind = kind,
 		.line = lexer->line
 	};
 	return t;
 }
 
-static Token ErrorToken(Lexer* lexer, const char* msg) {
+static Token ErrorToken(Lexer* lexer, char* msg) {
 	Token t = {
-		.length = strlen(msg),
-		.chars = msg,
+		.lexeme = (Slice) {
+			.length = strlen(msg),
+			.chars = msg,
+		},
 		.kind = TOKEN_ERROR,
 		.line = lexer->line,
 	};
@@ -90,21 +107,12 @@ static TokenKind IdentifyWord(Lexer* lexer) {
 static Token WordToken(Lexer* lexer) {
 	char c = *lexer->current;
 	while (is_digit(c) || is_alpha(c)) {
-		c = advance(lexer);
+		advance(lexer);
+		c = *lexer->current;
 	}
 
 	TokenKind kind = IdentifyWord(lexer);
 	return MakeToken(lexer, kind);
-}
-
-Lexer NewLexer(const char* source) {
-	Lexer lex = {
-		.source = source,
-		.start = source,
-		.current = source,
-		.line = 1,
-	};
-	return lex;
 }
 
 Token NextToken(Lexer* lexer) {
@@ -135,6 +143,7 @@ Token NextToken(Lexer* lexer) {
 		case '=':
 			return MakeToken(lexer, TOKEN_EQUAL);
 		default:
-			return ErrorToken(lexer, "Unrecognized character!");
+			const char* error = "Unrecognized character!";
+			return ErrorToken(lexer, error);
 	}
 }

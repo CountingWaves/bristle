@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "io.h"
 #include "lexer.h"
+#include "text.h"
 
-// I'm borrowing pretty heavily from
-// Crafting Interpreters right now, 
-// in case you couldn't tell
-
-void execute(char* source) {
+void interpret(Slice source) {
 	Lexer lex = NewLexer(source);
 	int line = 0;
 
@@ -21,68 +19,61 @@ void execute(char* source) {
 			printf("%4d", line);
 		}
 	
-		printf(" %d: '%.*s'\n", tk.kind, tk.length, tk.chars);
+		printf(" %d: '%.*s'\n", tk.kind, tk.lexeme.length, tk.lexeme.chars);
 		if (tk.kind == TOKEN_END) return;
 	}
 }
 
 void repl() {
 
-	char buffer[256];
+	String source;
 
 	for (;;) {
 		printf("> ");
-		if (fgets(buffer, 256, stdin) == NULL) { 
+		source = ReadLineStdin();
+
+		if (source.length == 0) {
 			printf("\n");
 			return;
 		}
-		execute(buffer);
+
+		interpret((Slice) { 
+			.length = source.length, 
+			.chars = source.chars 
+		});
+
+		FreeString(&source);
 	}
 
 }
 
-char* ReadFile(char* path) {
-	FILE* file = fopen(path, "r");
+void RunFile(char* path) {
+	IOError err;
+	Slice source = ReadFile(path, &err);
 
-	if (file == NULL) {
-		fprintf(stderr, "Failed to open file '%s'", path);
-		exit(1);
+	switch (err) {
+		case IO_STATUS_OK:
+			interpret(source);
+			return;
+		case BAD_FILE_PATH:
+			fprintf(stderr, "Could not find file '%s'", path);
+			break;
+		case FILE_OOM:
+			fprintf(stderr, "Insufficient memory to read file '%s'", path);
+			break;
+		case FILE_READ_ERROR:
+			fprintf(stderr, "Error while reading file '%s'", path);
+			break;
 	}
-
-	// get the size of the file
-	fseek(file, 0, SEEK_END);
-	long size = ftell(file);
-	rewind(file);
-
-	// allocate a heap buffer for the source code
-	char* buffer = (char*) malloc(size + 1);
-	if (buffer == NULL) {
-		fprintf(stderr, "Not enough memory to read file '%s'!", path);
-		exit(1);
-	}
-
-	// read file contents into the buffer
-	size_t bytesRead = fread(buffer, 1, size, file);
-	if (bytesRead < size) {
-		fprintf(stderr, "Error while reading file '%s'!", path);
-		exit(1);
-	}
-
-	buffer[bytesRead] = '\0';
-	
-	// release the file and return the buffer
-	fclose(file);
-	return buffer;
+	exit(1);
 }
-
 
 int main(int argc, char** argv) {
 
 	if (argc == 1) {
 		repl();
 	} else if (argc == 2) {
-		char* source = ReadFile(argv[1]);
-		execute(source);
+		RunFile(argv[1]);
 	} else {
 		fprintf(stderr, "Usage: bristle [file_path]\n");
 		return 1;
