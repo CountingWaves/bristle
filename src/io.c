@@ -27,7 +27,7 @@ Slice ReadFile(char* path, IOError* err) {
 	rewind(file);
 
 	// allocate buffer for file data
-	unsigned char* buffer = (unsigned char*) malloc(size);
+	char* buffer = (char*) malloc(size);
 	if (buffer == NULL) {
 		*err = FILE_OOM;
 		return NullSlice;	
@@ -49,7 +49,7 @@ Slice ReadFile(char* path, IOError* err) {
 	};
 }
 
-String ReadLineStdin() {
+String ReadLineStdin(void) {
 	
 	String buffer = NewString();
 	

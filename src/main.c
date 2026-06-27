@@ -6,11 +6,11 @@
 #include "text.h"
 
 void interpret(Slice source) {
-	Lexer lex = NewLexer(source);
-	int line = 0;
+	Lexer* lex = NewLexer(source);
+	unsigned int line = 0;
 
 	for (;;) {
-		Token tk = NextToken(&lex);
+		Token tk = NextToken(lex);
 
 		if (tk.line == line) {
 			printf("   |");
@@ -19,12 +19,12 @@ void interpret(Slice source) {
 			printf("%4d", line);
 		}
 	
-		printf(" %d: '%.*s'\n", tk.kind, tk.lexeme.length, tk.lexeme.chars);
+		printf(" %d: '%.*s'\n", tk.kind, (int) tk.lexeme.length, tk.lexeme.chars);
 		if (tk.kind == TOKEN_END) return;
 	}
 }
 
-void repl() {
+void repl(void) {
 
 	String source;
 

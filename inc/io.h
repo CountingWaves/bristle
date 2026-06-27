@@ -11,6 +11,6 @@ typedef enum {
 } IOError;
 
 Slice ReadFile(char* path, IOError* err);
-String ReadLineStdin();
+String ReadLineStdin(void);
 
 #endif

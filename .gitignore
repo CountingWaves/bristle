@@ -1,3 +1,12 @@
+# build artifacts
 *.o
 *.d
 bristle
+
+# clangd tooling
+.cache
+.clangd
+compile_commands.json
+
+# testing artifacts
+tests/test-runner

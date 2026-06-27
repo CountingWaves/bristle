@@ -4,27 +4,40 @@
 
 #include "lexer.h"
 
-Lexer NewLexer(Slice source) {
-	Lexer lex = {
+struct Lexer {
+	Slice source;
+
+	// fields to track position in source
+	char* start;
+	char* current;
+	unsigned int line;
+};
+
+
+Lexer* NewLexer(Slice source) {
+	Lexer* lex = (Lexer*) malloc(sizeof(Lexer));
+
+	*lex = (Lexer) {
 		.source = source,
 		.start = source.chars,
 		.current = source.chars,
 		.line = 1,
 	};
+	
 	return lex;
 }
 
-static bool is_digit(char c) {
+static bool IsDigit(char c) {
 	return '0' <= c && c <= '9';
 }
 
-static bool is_alpha(char c) {
+static bool IsAlpha(char c) {
 	return ('a' <= c && c <= 'z') ||
 		('A' <= c && c <= 'Z') ||
 		(c == '_');
 }
 
-static char advance(Lexer* lexer) {
+static char Advance(Lexer* lexer) {
 	if (lexer->current > lexer->source.chars + lexer->source.length) {
 		return '\0';
 	} else {
@@ -32,18 +45,22 @@ static char advance(Lexer* lexer) {
 	}
 }
 
+static char Peek(Lexer* lexer) {
+	return *lexer->current;
+}
+
 static void SkipWhitespace(Lexer* lexer) {
 	for (;;) {
-		char c = *lexer->current;
+		char c = Peek(lexer);
 		switch (c) {
 			case ' ':
 			case '\t':
 			case '\r':
-				advance(lexer);
+				Advance(lexer);
 				break;
 			case '\n':
 				lexer->line++;
-				advance(lexer);
+				Advance(lexer);
 				break;
 			default:
 				return;
@@ -76,15 +93,16 @@ static Token ErrorToken(Lexer* lexer, char* msg) {
 }
 
 static Token NumberToken(Lexer* lexer) {
-	while (is_digit(*lexer->current)) advance(lexer);
+	while (IsDigit(Peek(lexer))) Advance(lexer);
 	return MakeToken(lexer, TOKEN_INTEGER);
 }
 
 static TokenKind CheckKeyword(Lexer* lexer, size_t start, size_t length,
-		const char* rest, TokenKind keyword) {
-	if (lexer->current - lexer->start == start + length &&
-			memcmp(lexer->start + start, rest, length) == 0) {
-		
+		const char* rest, TokenKind keyword) 
+{
+	if ((size_t) (lexer->current - lexer->start) == start + length 
+			&& memcmp(lexer->start + start, rest, length) == 0) 
+	{
 		return keyword;
 	} else {
 		return TOKEN_IDENTIFIER;
@@ -92,7 +110,7 @@ static TokenKind CheckKeyword(Lexer* lexer, size_t start, size_t length,
 }
 
 static TokenKind IdentifyWord(Lexer* lexer) {
-	const char* word = lexer->start;
+	char* word = lexer->start;
 
 	switch (word[0]) {
 		case 'l':
@@ -105,10 +123,10 @@ static TokenKind IdentifyWord(Lexer* lexer) {
 }
 
 static Token WordToken(Lexer* lexer) {
-	char c = *lexer->current;
-	while (is_digit(c) || is_alpha(c)) {
-		advance(lexer);
-		c = *lexer->current;
+	char c = Peek(lexer);
+	while (IsDigit(c) || IsAlpha(c)) {
+		Advance(lexer);
+		c = Peek(lexer);
 	}
 
 	TokenKind kind = IdentifyWord(lexer);
@@ -119,11 +137,11 @@ Token NextToken(Lexer* lexer) {
 	SkipWhitespace(lexer);
 	lexer->start = lexer->current;
 	
-	char c = advance(lexer);
+	char c = Advance(lexer);
 
 	if (c == '\0') return MakeToken(lexer, TOKEN_END);
-	else if (is_digit(c)) return NumberToken(lexer);
-	else if (is_alpha(c)) return WordToken(lexer);
+	else if (IsDigit(c)) return NumberToken(lexer);
+	else if (IsAlpha(c)) return WordToken(lexer);
 
 	switch (c) {
 		case '(':
@@ -143,7 +161,6 @@ Token NextToken(Lexer* lexer) {
 		case '=':
 			return MakeToken(lexer, TOKEN_EQUAL);
 		default:
-			const char* error = "Unrecognized character!";
-			return ErrorToken(lexer, error);
+			return ErrorToken(lexer, "Unrecognized character!");
 	}
 }

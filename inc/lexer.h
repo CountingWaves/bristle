@@ -35,17 +35,9 @@ typedef struct {
 	unsigned int line;	
 } Token;
 
-typedef struct {
-	Slice source;
+typedef struct Lexer Lexer;
 
-	// fields to track position in source
-	const unsigned char* start;
-	const unsigned char* current;
-	unsigned int line;
-} Lexer;
-
-
-Lexer NewLexer(Slice source);
+Lexer* NewLexer(Slice source);
 Token NextToken(Lexer* lexer);
 
 #endif

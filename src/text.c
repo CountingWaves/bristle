@@ -3,30 +3,35 @@
 
 #include "text.h"
 
-String NewString() {
-	unsigned char* buffer = (unsigned char*) malloc(8);
-	if (buffer == NULL) {
-		return (String) {
-			.length = 0,
-			.capacity = 0,
-			.chars = NULL,
-		};
-	} else {
-		return (String) {
-			.length = 0,
-			.capacity = 8,
-			.chars = buffer,
-		};
+String NewString(void) {
+	String s = {
+		.length = 0,
+		.capacity = 0,
+		.chars = NULL
+	};
+
+	char* buffer = (char*) malloc(8);
+	if (buffer == NULL) return s;
+
+	s.capacity = 8;
+	s.chars = buffer;
+	return s;
+}
+
+int GrowString(String* str, size_t add_cap) {
+	char* new_buf = realloc(str->chars, str->capacity + add_cap);
+	
+	if (new_buf == NULL) return -1;
+	else {	
+		str->chars = new_buf;
+		return 0;
 	}
 }
 
-int StringAppend(String* str, unsigned char c) {
+int StringAppend(String* str, char c) {
 	if (str->length + 1 > str->capacity) {
-		unsigned char* new_buf = (unsigned char*) 
-			realloc(str->chars, str->capacity * 2);
-
-		if (new_buf == NULL) return -1;
-		str->chars = new_buf;
+		int result = GrowString(str, str->capacity);
+		if (result == -1) return -1;
 	}
 
 	str->chars[str->length++] = c;
@@ -38,4 +43,11 @@ void FreeString(String* str) {
 	str->length = 0;
 	str->capacity = 0;
 	str->chars = NULL;
+}
+
+Slice SliceChars(char* chars) {
+	return (Slice) {
+		.length = strlen(chars),
+		.chars = chars,
+	};
 }
