@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "lexer.h"
+#include "memory.h"
 
 struct Lexer {
 	Slice source;
@@ -15,7 +15,7 @@ struct Lexer {
 
 
 Lexer* NewLexer(Slice source) {
-	Lexer* lex = (Lexer*) malloc(sizeof(Lexer));
+	Lexer* lex = (Lexer*) xmalloc(sizeof(Lexer));
 
 	*lex = (Lexer) {
 		.source = source,

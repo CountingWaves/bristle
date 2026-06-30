@@ -6,7 +6,6 @@
 typedef enum {
 	IO_STATUS_OK,
 	BAD_FILE_PATH,
-	FILE_OOM,
 	FILE_READ_ERROR,
 } IOError;
 

@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include <string.h>
 
+#include "memory.h"
 #include "text.h"
 
 String NewString(void) {
@@ -10,7 +10,7 @@ String NewString(void) {
 		.chars = NULL
 	};
 
-	char* buffer = (char*) malloc(8);
+	char* buffer = (char*) xmalloc(8);
 	if (buffer == NULL) return s;
 
 	s.capacity = 8;
@@ -19,7 +19,7 @@ String NewString(void) {
 }
 
 int GrowString(String* str, size_t add_cap) {
-	char* new_buf = realloc(str->chars, str->capacity + add_cap);
+	char* new_buf = xrealloc(str->chars, str->capacity + add_cap);
 	
 	if (new_buf == NULL) return -1;
 	else {	
@@ -39,7 +39,7 @@ int StringAppend(String* str, char c) {
 }
 
 void FreeString(String* str) {
-	free(str->chars);
+	dealloc(str->chars);
 	str->length = 0;
 	str->capacity = 0;
 	str->chars = NULL;

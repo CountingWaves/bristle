@@ -58,9 +58,6 @@ void RunFile(char* path) {
 		case BAD_FILE_PATH:
 			fprintf(stderr, "Could not find file '%s'", path);
 			break;
-		case FILE_OOM:
-			fprintf(stderr, "Insufficient memory to read file '%s'", path);
-			break;
 		case FILE_READ_ERROR:
 			fprintf(stderr, "Error while reading file '%s'", path);
 			break;

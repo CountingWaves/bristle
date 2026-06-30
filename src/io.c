@@ -1,8 +1,8 @@
 #include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "io.h"
+#include "memory.h"
 
 #define NullSlice \
 	((Slice) { .length = 0, .chars = NULL })
@@ -27,11 +27,7 @@ Slice ReadFile(char* path, IOError* err) {
 	rewind(file);
 
 	// allocate buffer for file data
-	char* buffer = (char*) malloc(size);
-	if (buffer == NULL) {
-		*err = FILE_OOM;
-		return NullSlice;	
-	}
+	char* buffer = (char*) xmalloc(size);
 
 	// read the file contents into a buffer
 	size_t BytesRead = fread(buffer, 1, size, file);
@@ -49,13 +45,12 @@ Slice ReadFile(char* path, IOError* err) {
 	};
 }
 
-String ReadLineStdin(void) {
-	
+String ReadLineStdin(void) {	
 	String buffer = NewString();
 	
 	int c = getchar();
 	while (c != '\n' && c != EOF) {
-		StringAppend(&buffer, (unsigned char) c);
+		StringAppend(&buffer, c);
 		c = getchar();
 	}	
 	
