@@ -18,7 +18,7 @@ Reads the contents of a file into a string slice.
     the function call.
 
 ### Return Value
-- Returns a `Slice` (see docs for text.h)[text.md] containing the entire
+- Returns a `Slice` (see docs for text.h)[./text.md] containing the entire
    contents of the file.
 
 ### Errors
@@ -32,6 +32,8 @@ Reads the contents of a file into a string slice.
 ### Usage
 
 ```{c}
+#include <stdio.h>
+
 #include "io.h"
 #include "text.h"
 
